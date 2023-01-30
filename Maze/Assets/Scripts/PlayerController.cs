@@ -11,12 +11,14 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private float mvX;
     private float mvY;
-    public float speed = 0;
-    private int score = 0;
-    public TextMeshProUGUI scoreText;
+    public float speed = 1;
+    private int hp = 10;
+    public TextMeshProUGUI hpText;
     private Collider coll;
     private float dist2Gr;
     public GameObject winTextObj;
+    private Color hpCol;
+    private Renderer rend;
 
     // Start is called before the first frame update
     void Start()
@@ -25,7 +27,9 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<Collider>();
         dist2Gr = coll.bounds.extents.y;
-        SetScoreText();
+        SetHPText();
+        rend = GetComponent<Renderer>();
+        rend.material.color = Color.green;
     }
 
     void OnMove(InputValue mvVal)
@@ -46,9 +50,9 @@ public class PlayerController : MonoBehaviour
         return Physics.Raycast(transform.position, -Vector3.up, dist2Gr + 0.2f);
     }
 
-    void SetScoreText()
+    void SetHPText()
     {
-        scoreText.text = "Score: " + score.ToString();
+        hpText.text = "HP: " + hp.ToString();
     }
 
     private void FixedUpdate()
@@ -57,20 +61,32 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(mv*speed);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
         if (other.gameObject.CompareTag("pickUp"))
         {
-            other.gameObject.SetActive(false);
-            score += 100;
-            SetScoreText();
-            if (GameObject.FindGameObjectWithTag("pickUp") == null)
+            hp--;
+            SetHPText();
+            hpCol = new Color(0f + .1f*(10-hp), 1.0f - .1f*(10-hp), 0f, 1.0f);
+            rend.material.color = hpCol;
+            if (hp <= 0)
             {
-                winTextObj.SetActive(true);
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }else if (hp <= 3)
+            {
+                hpText.color = Color.red;
             }
         }
+        else if (other.gameObject.CompareTag("KillPlane")) SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 
-        if (other.gameObject.CompareTag("KillPlane")) SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("End"))
+        {
+            Destroy(other.gameObject);
+            winTextObj.SetActive(true);
+        }
     }
 
 }
