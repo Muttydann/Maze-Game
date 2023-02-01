@@ -13,17 +13,23 @@ public class PlayerController : MonoBehaviour
     private float mvY;
     public float speed = 1;
     private int hp = 10;
-    public TextMeshProUGUI hpText;
+    public GameObject hpTextObj;
+    private TextMeshProUGUI hpText;
+    public GameObject timTextObj;
+    private TextMeshProUGUI timText;
     private Collider coll;
     private float dist2Gr;
     public GameObject winTextObj;
     private Color hpCol;
     private Renderer rend;
+    private float tim = 0;
 
     // Start is called before the first frame update
     void Start()
     {
         winTextObj.SetActive(false);
+        hpText = hpTextObj.GetComponent<TextMeshProUGUI>();
+        timText = timTextObj.GetComponent<TextMeshProUGUI>();
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<Collider>();
         dist2Gr = coll.bounds.extents.y;
@@ -53,6 +59,12 @@ public class PlayerController : MonoBehaviour
     void SetHPText()
     {
         hpText.text = "HP: " + hp.ToString();
+    }
+
+    private void Update()
+    {
+        tim += Time.deltaTime;
+        timText.SetText(tim.ToString("F2"));
     }
 
     private void FixedUpdate()
@@ -85,7 +97,10 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("End"))
         {
             Destroy(other.gameObject);
+            winTextObj.GetComponent<TextMeshProUGUI>().SetText("You're Win!" + "\n" + "Time: " + tim.ToString("F2"));
             winTextObj.SetActive(true);
+            timTextObj.SetActive(false);
+            hpTextObj.SetActive(false);
         }
     }
 
